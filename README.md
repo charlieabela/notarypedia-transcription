@@ -14,26 +14,18 @@ The study investigates transcription and deed segmentation using 410 annotated p
 | [deed_segmenter/](deed_segmenter/README.md) | BERT training, inference and deed reconstruction |
 | [results/](results/README.md) | Machine-readable values reported in the paper, with table references and evaluation partitions |
 
-The component READMEs provide the original installation and usage instructions. Their references to `notarypedia-placements` identify the source repository. The training configurations remain in the original scripts.
+The component READMEs provide the installation and usage instructions.
 
 ## Relationship to the paper
 
 The reported experiments cover recognition, body–margin structure, cross-register transfer and deed segmentation. The combined FasterDAN model achieved 18.15% test CER. The R352 model applied to R335 without fine-tuning achieved 85.74% test CER.
 
-The results files distinguish validation from test scores. Reported BERT test-line classification used PAGE-XML reference transcriptions. Table 4 reports validation F1 and separate full-register reconstruction counts; these counts are not numbers of correctly recovered test deeds.
+The results files distinguish validation from test scores. Reported BERT test-line classification used PAGE-XML reference transcriptions.
 
-The CSV files transcribe the accompanying manuscript. They are not newly computed evaluation outputs. The copied code is supplied as companion implementation material; no experiments were rerun when preparing this repository.
+The CSV files transcribe the accompanying manuscript. The code is supplied as companion implementation material.
 
-## Source and access
+Synthetic training requires the original font collection in addition to the data and checkpoints.
 
-The source files and existing documentation were copied **without modification** from:
-
-- Repository: `charlieabela/notarypedia-placements`
-- Branch: `fasterdan-htr`
-- Commit: `e83e73afff2ba27c1451dc5f3fc0f90305d8d74c`
-
-Only the two relevant components were selected. Unrelated applications, font binaries, an empty file and a duplicate ignore file were omitted. Existing code, requirements, citation information and licence files were preserved. Synthetic training requires the original font collection in addition to the data and checkpoints.
-
-Manuscript images, PAGE-XML transcriptions, trained weights and underlying evaluation outputs are not bundled. Enquiries about access should be directed to [Charlie Abela](mailto:charlie.abela@um.edu.mt) or [Chukwuma Sidney Anih](mailto:chukwuma.anih.24@um.edu.mt).
+Manuscript images, PAGE-XML transcriptions, trained weights and underlying evaluation outputs are not bundled. Enquiries should be directed to [Charlie Abela](mailto:charlie.abela@um.edu.mt) or [Chukwuma Sidney Anih](mailto:chukwuma.anih.24@um.edu.mt).
 
 See [CITATION.cff](CITATION.cff) for citation information. FasterDAN retains its [CeCILL-C licence](fasterdan/LICENSE_CECILL-C.md) and upstream attribution. Other materials retain the terms supplied with them; contact the authors where no licence is specified.
