@@ -1,0 +1,10 @@
+variant,training_corpus,evaluation_corpus,input_text,source_partition,metric,value,unit,selected_epoch,source
+v1,R352,R352,PAGE_XML_reference,test,line_accuracy,0.83,fraction,,Section 4.3
+v2,R335,R335,PAGE_XML_reference,test,line_accuracy,0.72,fraction,,Section 4.3
+v1,R352,R352,PAGE_XML_reference,validation,validation_f1_reported,0.8213,fraction,8,Table 4
+v2,R335,R335,PAGE_XML_reference,validation,validation_f1_reported,0.6481,fraction,8,Table 4
+v3,Combined,Combined,PAGE_XML_reference,validation,validation_f1_reported,0.7473,fraction,6,Table 4
+v1,R352,R352,not_specified_for_count,full_register,predicted_deed_count,103,count,8,Table 4
+v2,R335,R335,not_specified_for_count,full_register,predicted_deed_count,24,count,8,Table 4
+v3,Combined,R352,not_specified_for_count,full_register,predicted_deed_count,95,count,6,Table 4
+v3,Combined,R335,not_specified_for_count,full_register,predicted_deed_count,24,count,6,Table 4

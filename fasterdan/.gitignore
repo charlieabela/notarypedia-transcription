@@ -1,0 +1,42 @@
+# --- Data (archival images and ground truth are not public) ---
+faster_dan/Datasets/raw/
+faster_dan/Datasets/formatted/
+**/Datasets/raw/
+**/Datasets/formatted/
+*.jpg
+*.jpeg
+*.png
+*.tif
+*.tiff
+*.jxl
+*.pkl
+
+# --- Model weights, logs and training outputs ---
+outputs/
+**/outputs/
+*.pt
+*.pth
+*.ckpt
+events.out.tfevents.*
+*.log
+nohup.out
+
+# --- Prediction / analysis output folders (contain transcriptions) ---
+faster_dan/out_*/
+faster_dan/phase1_output/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# --- Editors / OS ---
+.idea/
+.vscode/
+.DS_Store
+*.swp

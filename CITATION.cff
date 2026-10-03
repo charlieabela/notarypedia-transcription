@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "Please cite the companion materials and the associated manuscript."
+title: "Notarypedia transcription: companion materials"
+type: software
+authors:
+  - name: "Notarypedia project"
+repository-code: "https://github.com/charlieabela/notarypedia-transcription"
+preferred-citation:
+  type: unpublished
+  title: "Structured Full-Page Transcription and Deed Segmentation in Historical Notarial Manuscripts"
+  authors:
+    - family-names: Anih
+      given-names: Chukwuma Sidney
+    - family-names: Ellul
+      given-names: Charlene
+    - family-names: Layfield
+      given-names: Colin
+    - family-names: Buhagiar
+      given-names: Vanessa
+    - family-names: Abela
+      given-names: Joan
+    - family-names: Abela
+      given-names: Charlie
+  year: 2026

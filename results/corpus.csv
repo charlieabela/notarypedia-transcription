@@ -1,0 +1,4 @@
+register,pages,fasterdan_train_pages,fasterdan_validation_pages,fasterdan_test_pages,pages_with_margins,formatted_text_segments,character_set_size,source_table
+R352,327,261,32,34,210,6726,93,Table 1
+R335,83,66,8,9,48,1572,78,Table 1
+Combined,410,328,41,41,258,8298,96,Table 1

@@ -1,0 +1,7 @@
+condition,model,source_register,evaluation_register,evaluation_split,CER_percent,source_table
+Within-register,HTR+,R335,R335,Test,8.7,Table 5
+Within-register,HTR+,R352,R352,Validation,8.67,Table 2
+Cross-register transfer (no fine-tuning),HTR+,R352,R335,Test,27.78,Table 5
+Cross-register transfer (no fine-tuning),HTR+,R335,R352,Test,42.6,Table 5
+After adaptation on target-register material,HTR+,R335,R352,Test,13.83,Table 5
+Cross-register transfer (no fine-tuning),FasterDAN,R352,R335,Test,85.74,Table 5

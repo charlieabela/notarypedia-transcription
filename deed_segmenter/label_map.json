@@ -1,0 +1,20 @@
+{
+  "labels": [
+    "O",
+    "B-DEED",
+    "I-DEED",
+    "E-DEED"
+  ],
+  "l2i": {
+    "O": 0,
+    "B-DEED": 1,
+    "I-DEED": 2,
+    "E-DEED": 3
+  },
+  "i2l": {
+    "0": "O",
+    "1": "B-DEED",
+    "2": "I-DEED",
+    "3": "E-DEED"
+  }
+}

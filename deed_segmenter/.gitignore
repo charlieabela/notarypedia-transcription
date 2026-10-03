@@ -1,0 +1,10 @@
+# Trained weights and data are not tracked in git
+outputs/
+best_model/
+*.safetensors
+*.bin
+*.zip
+data/
+__pycache__/
+.venv/
+.DS_Store

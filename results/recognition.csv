@@ -1,0 +1,18 @@
+experiment_id,model,training_corpus,evaluation_corpus,evaluation_split,condition,cer_percent,wer_percent,map_cer_percent,loer_percent,approximate_cer,source_table
+htr_r352_train,HTR+,R352,R352,training,within_register,6.16,,,,false,Table 2
+htr_r352_valid,HTR+,R352,R352,validation,within_register,8.67,,,,false,Table 2
+htr_combined_train,HTR+,Combined,Combined,training,pooled,6.51,,,,false,Table 2
+htr_combined_valid,HTR+,Combined,Combined,validation,pooled,7.18,,,,false,Table 2
+fdan_r352_train,FasterDAN,R352,R352,training,within_register,1.31,1.65,99.85,0.00,false,Table 3
+fdan_r352_valid,FasterDAN,R352,R352,validation,within_register,6.69,16.00,92.81,0.00,false,Table 3
+fdan_r352_test,FasterDAN,R352,R352,test,within_register,21.02,31.58,75.56,8.33,false,Table 3
+fdan_combined_valid,FasterDAN,Combined,Combined,validation,pooled,6.56,16.30,91.95,0.00,false,Table 3
+fdan_combined_test,FasterDAN,Combined,Combined,test,pooled,18.15,28.05,77.21,6.98,false,Table 3
+read2016_r335_test,READ-2016 pretrained,READ-2016,R335,test,zero_shot,42.0,,,,true,Table 5
+htr_r335_test,HTR+,R335,R335,test,within_register,8.70,,,,false,Table 5
+htr_r335_to_r352,HTR+,R335,R352,test,zero_shot,42.60,75.35,,,false,Table 5
+htr_r352_to_r335,HTR+,R352,R335,test,zero_shot,27.78,,,,false,Table 5
+htr_r335_adapted_r352,HTR+,R335 then R352 subset,R352,test,adapted,13.83,,,,false,Table 5
+fdan_r352_to_r335_train_partition,FasterDAN,R352,R335,target_training_partition,zero_shot,86.67,,0.00,,false,Table 5
+fdan_r352_to_r335_valid_partition,FasterDAN,R352,R335,target_validation_partition,zero_shot,84.09,,0.00,,false,Table 5
+fdan_r352_to_r335_test_partition,FasterDAN,R352,R335,target_test_partition,zero_shot,85.74,,0.00,,false,Table 5

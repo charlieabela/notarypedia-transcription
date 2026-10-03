@@ -1,0 +1,305 @@
+#  Copyright Université de Rouen Normandie (1), INSA Rouen (2),
+#  tutelles du laboratoire LITIS (1 et 2)
+#  contributors :
+#  - Denis Coquenet
+#
+#  This software is a computer program written in Python whose purpose is 
+#  to recognize text and layout from full-page images with end-to-end deep neural networks.
+#
+#  This software is governed by the CeCILL-C license under French law and
+#  abiding by the rules of distribution of free software.  You can  use,
+#  modify and/ or redistribute the software under the terms of the CeCILL-C
+#  license as circulated by CEA, CNRS and INRIA at the following URL
+#  "http://www.cecill.info".
+#
+#  As a counterpart to the access to the source code and  rights to copy,
+#  modify and redistribute granted by the license, users are provided only
+#  with a limited warranty  and the software's author,  the holder of the
+#  economic rights,  and the successive licensors  have only  limited
+#  liability.
+#
+#  In this respect, the user's attention is drawn to the risks associated
+#  with loading,  using,  modifying and/or developing or reproducing the
+#  software by the user in light of its specific status of free software,
+#  that may mean  that it is complicated to manipulate,  and  that  also
+#  therefore means  that it is reserved for developers  and  experienced
+#  professionals having in-depth computer knowledge. Users are therefore
+#  encouraged to load and test the software's suitability as regards their
+#  requirements in conditions enabling the security of their systems and/or
+#  data to be ensured and,  more generally, to use and operate it in the
+#  same conditions as regards security.
+#
+#  The fact that you are presently reading this means that you have had
+#  knowledge of the CeCILL-C license and that you accept its terms.
+
+import numpy as np
+from faster_dan.Datasets.dataset_formatters.read2016_formatter import SEM_TOKENS as READ_TOKENS
+from faster_dan.Datasets.dataset_formatters.rimes_formatter import SEM_TOKENS as RIMES_TOKENS
+try:
+    from faster_dan.Datasets.dataset_formatters.r352_formatter import SEM_TOKENS as R352_TOKENS
+except ImportError:
+    R352_TOKENS = {}
+
+
+class PostProcessingModule:
+    """
+    Forward pass post processing
+    Add/remove layout tokens only to:
+     - respect token hierarchy
+     - complete/remove unpaired tokens
+    """
+
+    def __init__(self):
+        self.prediction = None
+        self.confidence = None
+        self.num_op = 0
+
+    def post_processing(self):
+        raise NotImplementedError
+
+    def post_process(self, prediction, confidence_score=None):
+        """
+        Apply dataset-specific post-processing
+        """
+        self.num_op = 0
+        self.prediction = list(prediction)
+        self.confidence = list(confidence_score) if confidence_score is not None else None
+        if self.confidence is not None:
+            assert len(self.prediction) == len(self.confidence)
+        return self.post_processing()
+
+    def insert_label(self, index, label):
+        """
+        Insert token at specific index. The associated confidence score is set to 0.
+        """
+        self.prediction.insert(index, label)
+        if self.confidence is not None:
+            self.confidence.insert(index, 0)
+        self.num_op += 1
+
+    def del_label(self, index):
+        """
+        Remove the token at a specific index.
+        """
+        del self.prediction[index]
+        if self.confidence is not None:
+            del self.confidence[index]
+        self.num_op += 1
+
+
+class PostProcessingModuleREAD(PostProcessingModule):
+    """
+    Specific post-processing for the READ 2016 dataset at single-page and double-page levels
+    """
+    def __init__(self):
+        super(PostProcessingModuleREAD, self).__init__()
+
+        self.tokens = READ_TOKENS
+
+    def post_processing_page_labels(self):
+        """
+        Correct tokens of page detection.
+        """
+        ind = 0
+        while ind != len(self.prediction):
+            # Label must start with a begin-page token
+            if ind == 0 and self.prediction[ind] != self.tokens["page"]:
+                self.insert_label(0, self.tokens["page"])
+                continue
+            # There cannot be tokens out of begin-page end-page scope: begin-page must be preceded by end-page
+            if self.prediction[ind] == self.tokens["page"] and ind != 0 and self.prediction[ind - 1] != self.tokens["page"].upper():
+                self.insert_label(ind, self.tokens["page"].upper())
+                continue
+            # There cannot be tokens out of begin-page end-page scope: end-page must be followed by begin-page
+            if self.prediction[ind] == self.tokens["page"].upper() and ind < len(self.prediction) - 1 and self.prediction[ind + 1] != self.tokens["page"]:
+                self.insert_label(ind + 1, self.tokens["page"])
+            ind += 1
+        # Label must start with a begin-page token even for empty prediction
+        if len(self.prediction) == 0:
+            self.insert_label(0, self.tokens["page"])
+            ind += 1
+        # Label must end with a end-page token
+        if self.prediction[-1] != self.tokens["page"].upper():
+            self.insert_label(ind, self.tokens["page"].upper())
+
+    def post_processing(self):
+        """
+        Correct tokens of page number, section, body and annotations.
+        """
+        self.post_processing_page_labels()
+        ind = 0
+        begin_token = None
+        in_section = False
+        while ind != len(self.prediction):
+            # each tags must be closed while changing page
+            if self.prediction[ind] == self.tokens["page"].upper():
+                if begin_token is not None:
+                    self.insert_label(ind, begin_token.upper())
+                    begin_token = None
+                    ind += 1
+                elif in_section:
+                    self.insert_label(ind, self.tokens["section"].upper())
+                    in_section = False
+                    ind += 1
+                else:
+                    ind += 1
+                continue
+            # End token is removed if the previous begin token does not match with it
+            if self.prediction[ind] in [self.tokens["number"].upper(), self.tokens["annotation"].upper(), self.tokens["body"].upper()]:
+                if begin_token == self.prediction[ind].lower():
+                    begin_token = None
+                    ind += 1
+                else:
+                    self.del_label(ind)
+                continue
+            if self.prediction[ind] == self.tokens["section"].upper():
+                # each sub-tags must be closed while closing section
+                if in_section:
+                    if begin_token is None:
+                        ind += 1
+                    else:
+                        self.insert_label(ind, begin_token.upper())
+                        begin_token = None
+                        ind += 2
+                    in_section = False
+                else:
+                    self.del_label(ind)
+                continue
+            if self.prediction[ind] == self.tokens["section"]:
+                # A sub-tag must be closed before opening a section
+                if begin_token is not None:
+                    self.insert_label(ind, begin_token.upper())
+                    begin_token = None
+                    ind += 1
+                # A section must be closed before opening a new one
+                elif in_section:
+                    self.insert_label(ind, self.tokens["section"].upper())
+                    in_section = False
+                    ind += 1
+                else:
+                    in_section = True
+                    ind += 1
+                continue
+            if self.prediction[ind] == self.tokens["number"]:
+                # Page number cannot be in section: a started section must be closed
+                if begin_token is None:
+                    if in_section:
+                        in_section = False
+                        self.insert_label(ind, self.tokens["section"].upper())
+                        ind += 1
+                    begin_token = self.prediction[ind]
+                    ind += 1
+                else:
+                    self.insert_label(ind, begin_token.upper())
+                    begin_token = None
+                    ind += 1
+                continue
+            if self.prediction[ind] in [self.tokens["annotation"], self.tokens["body"]]:
+                # Annotation and body must be in section
+                if begin_token is None:
+                    if in_section:
+                        begin_token = self.prediction[ind]
+                        ind += 1
+                    else:
+                        in_section = True
+                        self.insert_label(ind, self.tokens["section"])
+                        ind += 1
+                # Previous sub-tag must be closed
+                else:
+                    self.insert_label(ind, begin_token.upper())
+                    begin_token = None
+                    ind += 1
+                continue
+            ind += 1
+        res = "".join(self.prediction)
+        if self.confidence is not None:
+            return res, np.array(self.confidence)
+        return res
+
+
+class PostProcessingModuleRIMES(PostProcessingModule):
+    """
+    Specific post-processing for the RIMES dataset at page level
+    """
+    def __init__(self):
+        super(PostProcessingModuleRIMES, self).__init__()
+        self.tokens = RIMES_TOKENS
+        self.end_tokens = [b.upper() for b in self.tokens.values()]
+
+    def post_processing(self):
+        ind = 0
+        begin_token = None
+        while ind != len(self.prediction):
+            char = self.prediction[ind]
+            # a tag must be closed before starting a new one
+            if char in self.tokens.values():
+                if begin_token is None:
+                    ind += 1
+                else:
+                    self.insert_label(ind, begin_token.upper())
+                    ind += 2
+                begin_token = char
+                continue
+            # an end token without prior corresponding begin token is removed
+            elif char in self.end_tokens:
+                if begin_token == char.lower():
+                    ind += 1
+                    begin_token = None
+                else:
+                    self.del_label(ind)
+                continue
+            else:
+                ind += 1
+        # a tag must be closed
+        if begin_token is not None:
+            self.insert_label(ind+1, begin_token.upper())
+        res = "".join(self.prediction)
+        if self.confidence is not None:
+            return res, np.array(self.confidence)
+        return res
+
+
+class PostProcessingModuleR352(PostProcessingModule):
+    """
+    Post-processing for R352 at page level.
+    Tokens: ⓑ/Ⓑ (body) and ⓜ/Ⓜ (margin).
+    R352 has no page-level token — mirroring PostProcessingModuleRIMES exactly.
+    Rule: every begin token must be closed before a new one opens;
+    unpaired end tokens are removed; unclosed begin tokens are closed.
+    """
+    def __init__(self):
+        super(PostProcessingModuleR352, self).__init__()
+        self.tokens     = R352_TOKENS
+        self.end_tokens = [b.upper() for b in self.tokens.values()]
+
+    def post_processing(self):
+        ind = 0
+        begin_token = None
+        while ind != len(self.prediction):
+            char = self.prediction[ind]
+            # A new begin token: close any open tag first
+            if char in self.tokens.values():
+                if begin_token is None:
+                    ind += 1
+                else:
+                    self.insert_label(ind, begin_token.upper())
+                    ind += 2
+                begin_token = char
+                continue
+            # End token: valid only if it matches the open begin token
+            elif char in self.end_tokens:
+                if begin_token == char.lower():
+                    ind += 1
+                    begin_token = None
+                else:
+                    self.del_label(ind)
+                continue
+            else:
+                ind += 1
+        # Close any unclosed tag
+        if begin_token is not None:
+            self.insert_label(len(self.prediction), begin_token.upper())
+        res = "".join(self.prediction)
+        if self.confidence is not None:
+            return res, np.array(self.confidence)
+        return res
